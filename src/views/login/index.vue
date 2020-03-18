@@ -36,16 +36,22 @@
           <el-button class="loginBtn" type="primary" @click="submitForm('form')">登录</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button class="loginBtn" type="primary" @click="onSubmit">注册</el-button>
+          <el-button class="loginBtn" type="primary" @click="register">注册</el-button>
         </el-form-item>
       </el-form>
     </div>
     <img class="right" src="../../assets/login_banner_ele.png" alt />
+    <register ref="register"></register>
   </div>
 </template>
 
 <script>
+import register from "./components/register";
 export default {
+  // 注册组件
+  components: {
+    register
+  },
   data() {
     return {
       form: {
@@ -80,8 +86,8 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
-      console.log("submit!");
+    register() {
+      this.$refs.register.dialogFormVisible = true;
     },
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
