@@ -1,6 +1,6 @@
 <template>
   <el-dialog title="用户注册" :visible.sync="dialogFormVisible">
-    <el-form ref="form" :model="form" :rules="rules">
+    <el-form ref="form" :model="form" :rules="rules" status-icon>
       <el-form-item prop="nickname" label="昵称" :label-width="formLabelWidth">
         <el-input v-model="form.nickname" autocomplete="off"></el-input>
       </el-form-item>
@@ -20,7 +20,7 @@
             <el-input v-model="form.code" autocomplete="off"></el-input>
           </el-col>
           <el-col :span="7" class="imgBox">
-            <img class="codeImg" src="../../../assets/login_captcha.png" alt />
+            <img class="codeImg" :src="imgUrl" alt @click="changeUrl" />
           </el-col>
         </el-row>
       </el-form-item>
@@ -30,7 +30,11 @@
             <el-input v-model="form.logincode" autocomplete="off"></el-input>
           </el-col>
           <el-col :span="7" class="imgBox">
-            <el-button>获取用户验证码</el-button>
+            <el-button
+              class="btn"
+              @click="getCode"
+              :disabled="time!=0"
+            >{{time == 0?'获取用户验证码':time + 's'}}</el-button>
           </el-col>
         </el-row>
       </el-form-item>
@@ -43,10 +47,32 @@
 </template>
 
 <script>
+// 导入封装的获取验证码的方法
+import { apiGetCode } from "../../../api/register";
 export default {
   data() {
+    let checkPhone = (rule, value, callback) => {
+      let reg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
+      if (reg.test(value)) {
+        callback();
+      } else {
+        callback("手机号不正确！");
+      }
+    };
+    let checkEmail = (rule, value, callback) => {
+      let reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+      if (reg.test(value)) {
+        callback();
+      } else {
+        callback("邮箱不正确！");
+      }
+    };
     return {
       dialogFormVisible: false,
+      imgUrl:
+        process.env.VUE_APP_ONLINEURL +
+        "/captcha?type=sendsms&num=" +
+        Date.now(), //时间戳
       form: {
         nickname: "",
         email: "",
@@ -61,10 +87,13 @@ export default {
           { required: true, message: "昵称不能为空", trigger: "blur" },
           { min: 5, max: 10, message: "长度在 5 到 10 个字符", trigger: "blur" }
         ],
-        email: [{ required: true, message: "邮箱不能为空", trigger: "blur" }],
+        email: [
+          { required: true, message: "邮箱不能为空", trigger: "blur" },
+          { validator: checkEmail, trigger: "blur" }
+        ],
         phone: [
           { required: true, message: "手机不能为空", trigger: "blur" },
-          { min: 11, max: 11, message: "长度是 11 个字符", trigger: "blur" }
+          { validator: checkPhone, trigger: "blur" }
         ],
         password: [
           { required: true, message: "密码不能为空", trigger: "blur" }
@@ -77,12 +106,16 @@ export default {
           { required: true, message: "验证码不能为空", trigger: "blur" },
           { min: 6, max: 6, message: "长度在 6 个字符", trigger: "blur" }
         ]
-      }
+      },
+      // 定时器
+      timer: "",
+      // 倒计时
+      time: 0
     };
   },
   methods: {
+    // 验证参数的合法性
     onsubmit() {
-      // 验证参数的合法性
       this.$refs.form.validate(valid => {
         if (valid) {
           this.$message({
@@ -92,6 +125,27 @@ export default {
         } else {
           this.$message.error("验证不通过");
         }
+      });
+    },
+    // 点击图片改变二维码
+    changeUrl() {
+      this.imgUrl =
+        process.env.VUE_APP_ONLINEURL +
+        "/captcha?type=sendsms&num=" +
+        Date.now();
+    },
+    getCode() {
+      this.time = 60;
+      this.timer = setInterval(() => {
+        if (this.time > 0) {
+          this.time--;
+        }
+        if (this.time == 0) {
+          clearInterval(this.timer);
+        }
+      }, 1000);
+      apiGetCode(this.form.code, this.form.phone).then(res => {
+        window.console.log(res);
       });
     }
   }
@@ -111,6 +165,9 @@ export default {
       .el-dialog__title {
         color: #fff;
       }
+    }
+    .btn {
+      width: 100%;
     }
     .imgBox {
       // width: 143px;
