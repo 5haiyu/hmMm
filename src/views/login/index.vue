@@ -21,7 +21,7 @@
               <el-input v-model="form.logincode" placeholder="请输入验证码" prefix-icon="el-icon-key"></el-input>
             </el-col>
             <el-col :span="8">
-              <img class="loginCode" src="../../assets/login_captcha.png" alt />
+              <img class="loginCode" :src="form.imgUrl" alt @click="changeUrl" />
             </el-col>
           </el-row>
         </el-form-item>
@@ -33,7 +33,7 @@
           </el-checkbox>
         </el-form-item>
         <el-form-item>
-          <el-button class="loginBtn" type="primary" @click="submitForm('form')">登录</el-button>
+          <el-button class="loginBtn" type="primary" @click="submitForm">登录</el-button>
         </el-form-item>
         <el-form-item>
           <el-button class="loginBtn" type="primary" @click="register">注册</el-button>
@@ -47,6 +47,10 @@
 
 <script>
 import register from "./components/register";
+// 导入封装的校验手机号的方法
+import { regPhone } from "@/utils/check";
+// 导入封装的登录接口的方法
+import { apiLogin } from "@/api/login";
 export default {
   // 注册组件
   components: {
@@ -55,15 +59,21 @@ export default {
   data() {
     return {
       form: {
-        phone: "",
-        password: "",
+        // 手机号
+        phone: "18511111111",
+        // 密码
+        password: "12345678",
+        // 图形验证码
         logincode: "",
-        isChecked: []
+        // 多选框
+        isChecked: [],
+        // 图形验证码链接
+        imgUrl: process.env.VUE_APP_URL + "/captcha?type=login&t=" + Date.now() //时间戳
       },
       rules: {
         phone: [
-          { required: true, message: "请输入活动名称", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" }
+          { required: true, message: "请手机号不能为空", trigger: "blur" },
+          { validator: regPhone, trigger: "blur" }
         ],
         password: [
           { required: true, message: "密码不能为空", trigger: "blur" },
@@ -86,16 +96,25 @@ export default {
     };
   },
   methods: {
+    // 点击事件 点击注册按钮就显示注册面板
     register() {
       this.$refs.register.dialogFormVisible = true;
     },
-    submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+    // 校验登录信息是否正确
+    submitForm() {
+      this.$refs.form.validate(valid => {
         if (valid) {
-          this.$message({
-            message: "验证通过",
-            type: "success"
+          apiLogin({
+            phone: this.form.phone,
+            password: this.form.password,
+            code: this.form.logincode
+          }).then(res => {
+            window.console.log(res);
           });
+          // this.$message({
+          //   message: "验证通过",
+          //   type: "success"
+          // });
         } else {
           this.$message.error({
             message: "验证失败"
@@ -103,6 +122,11 @@ export default {
           return false;
         }
       });
+    },
+    // 点击改变图形验证码的图片
+    changeUrl() {
+      this.form.imgUrl =
+        process.env.VUE_APP_URL + "/captcha?type=login&t=" + Date.now();
     }
   }
 };
