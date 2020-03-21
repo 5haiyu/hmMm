@@ -12,7 +12,12 @@
           <el-input v-model="form.phone" placeholder="请输入手机号" prefix-icon="el-icon-user"></el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" placeholder="请输入密码" prefix-icon="el-icon-lock"></el-input>
+          <el-input
+            type="password"
+            v-model="form.password"
+            placeholder="请输入密码"
+            prefix-icon="el-icon-lock"
+          ></el-input>
         </el-form-item>
         <el-form-item prop="logincode">
           <!-- 使用栅格系统 -->
@@ -26,11 +31,13 @@
           </el-row>
         </el-form-item>
         <el-form-item prop="isChecked">
-          <el-checkbox v-model="form.isChecked">
-            我已阅读并同意
-            <el-link type="primary">用户协议</el-link>和
-            <el-link type="primary">隐私条款</el-link>
-          </el-checkbox>
+          <el-checkbox-group v-model="form.isChecked">
+            <el-checkbox v-model="form.isChecked" label="A">
+              我已阅读并同意
+              <el-link type="primary">用户协议</el-link>和
+              <el-link type="primary">隐私条款</el-link>
+            </el-checkbox>
+          </el-checkbox-group>
         </el-form-item>
         <el-form-item>
           <el-button class="loginBtn" type="primary" @click="submitForm">登录</el-button>
@@ -51,6 +58,8 @@ import register from "./components/register";
 import { regPhone } from "@/utils/check";
 // 导入封装的登录接口的方法
 import { apiLogin } from "@/api/login";
+// 导入处理localstorage的方法
+import { setToken } from "@/utils/token";
 export default {
   // 注册组件
   components: {
@@ -66,7 +75,7 @@ export default {
         // 图形验证码
         logincode: "",
         // 多选框
-        isChecked: [],
+        isChecked: ["A"],
         // 图形验证码链接
         imgUrl: process.env.VUE_APP_URL + "/captcha?type=login&t=" + Date.now() //时间戳
       },
@@ -109,15 +118,26 @@ export default {
             password: this.form.password,
             code: this.form.logincode
           }).then(res => {
-            window.console.log(res);
+            // window.console.log(res);
+            if (res.data.code == 200) {
+              this.$message({
+                message: "验证通过",
+                type: "success"
+              });
+              // 跳转到首页
+              this.$router.push("/index");
+              // 将返回来的res数据里的token保存本地
+              // window.localStorage.setItem("hmMm", res.data.data.token);
+              setToken(res.data.data.token);
+            } else {
+              this.$message.error({
+                message: "验证失败"
+              });
+            }
           });
-          // this.$message({
-          //   message: "验证通过",
-          //   type: "success"
-          // });
         } else {
           this.$message.error({
-            message: "验证失败"
+            message: "登录信息不正确"
           });
           return false;
         }

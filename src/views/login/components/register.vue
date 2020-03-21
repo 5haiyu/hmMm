@@ -78,7 +78,7 @@ export default {
         password: "",
         code: "",
         logincode: "",
-        // 头像
+        // 用户头像 此参数用于头像的单一属性校验
         avatar: ""
       },
       formLabelWidth: "67px",
@@ -145,7 +145,7 @@ export default {
         }
       });
     },
-    // 点击图片改变图形码
+    // 点击图片改变图形验证码
     changeUrl() {
       this.imgUrl =
         process.env.VUE_APP_ONLINEURL +
@@ -154,6 +154,7 @@ export default {
     },
     // 获取手机验证码
     getCode() {
+      // 点击获取手机验证码时要先判断用户是否填入正确的手机号和正确的四位图形验证码
       let regphone = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
       if (!regphone.test(this.form.phone)) {
         this.$message.error("手机号不合法");
@@ -182,11 +183,12 @@ export default {
         }
       });
     },
-    // 上传头像成功
+    // 上传用户头像成功
     handleAvatarSuccess(res, file) {
       this.imageUrl = URL.createObjectURL(file.raw);
-      // 上传头像之后对avatar进行校验
+      // 给avatar赋值
       this.form.avatar = res.data.file_path;
+      // 上传用户头像之后对avatar进行校验
       this.$refs.form.validateField("avatar");
     },
     // 上传头像前
