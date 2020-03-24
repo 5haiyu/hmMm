@@ -17,7 +17,7 @@
       <el-aside width="auto">
         <!-- 菜单导航栏 -->
         <!-- 开启路由模式:router='true' -->
-        <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router='true'>
+        <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router="true">
           <el-menu-item index="/chart">
             <i class="el-icon-pie-chart"></i>
             <span slot="title">
@@ -64,7 +64,7 @@
 
 <script>
 import { apiInfo, apiLogout } from "@/api/index";
-import { removeToken } from "@/utils/token";
+import { removeToken, getToken } from "@/utils/token";
 export default {
   data() {
     return {
@@ -77,10 +77,25 @@ export default {
     };
   },
   created() {
+    // 判断用户是否登录
+    if (!getToken()) {
+      this.$message.error({
+        message: "未登录"
+      });
+      this.$router.push("/login");
+      return;
+    }
+    // 发送请求 渲染用户信息
     apiInfo().then(res => {
-      window.console.log(res);
-      this.userInfo = res.data.data;
-      this.avatarUrl = process.env.VUE_APP_URL + "/" + this.userInfo.avatar;
+      if (res.data.code == 200) {
+        this.userInfo = res.data.data;
+        this.avatarUrl = process.env.VUE_APP_URL + "/" + this.userInfo.avatar;
+      } else if (res.data.code == 206) {
+        this.$message.error({
+          message: "token错误"
+        });
+        this.$router.push("/login");
+      }
     });
   },
   methods: {
@@ -184,10 +199,10 @@ export default {
     width: 200px;
     min-height: 400px;
   }
-//   .link {
-//     text-decoration: none;
-//     color: #686a6e;
-//   }
+  //   .link {
+  //     text-decoration: none;
+  //     color: #686a6e;
+  //   }
 }
 
 .el-main {

@@ -69,9 +69,9 @@ export default {
     return {
       form: {
         // 手机号
-        phone: "18511111111",
+        phone: "13255556666",
         // 密码
-        password: "12345678",
+        password: "12345",
         // 图形验证码
         logincode: "",
         // 多选框

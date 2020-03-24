@@ -17,6 +17,9 @@ import enterprise from '../views/enterprise'
 import subject from '../views/subject'
 // 导入全局样式
 import '../style/index.css'
+// 导入nprogress样式和脚本
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 const router = new VueRouter({
     routes: [{
@@ -54,5 +57,16 @@ const router = new VueRouter({
         }
     ]
 })
+// 导航守卫
+router.beforeEach((to, from, next) => {
+    NProgress.start();
+    next()
+})
+// 导航后置钩子
+router.afterEach(() => {
+    NProgress.done();
+})
+// 关闭右上角的圈圈
+NProgress.configure({ showSpinner: false });
 // 将实例化的router对象暴露出去
 export default router
