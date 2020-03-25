@@ -7,8 +7,8 @@
         <span>黑马面面</span>
       </div>
       <div class="right">
-        <img :src="avatarUrl" alt />
-        <span>{{userInfo.username}},你好！</span>
+        <img :src='$store.state.avatarUrl' alt />
+        <span>{{$store.state.userInfo}},你好！</span>
         <button @click="exit">退出</button>
       </div>
     </el-header>
@@ -16,7 +16,7 @@
       <!-- aside的宽度应该由内容决定  设置为auto -->
       <el-aside width="auto">
         <!-- 菜单导航栏 -->
-        <!-- 开启路由模式:router='true' -->
+        <!-- 开启路由模式:router='true'-------------------------------------------- -->
         <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router="true">
           <el-menu-item index="/chart">
             <i class="el-icon-pie-chart"></i>
@@ -63,8 +63,8 @@
 </template>
 
 <script>
-import { apiInfo, apiLogout } from "@/api/index";
-import { removeToken, getToken } from "@/utils/token";
+import { apiLogout } from "@/api/index";
+import { removeToken } from "@/utils/token";
 export default {
   data() {
     return {
@@ -75,28 +75,6 @@ export default {
       // 导航栏菜单开合
       iscollapse: false
     };
-  },
-  created() {
-    // 判断用户是否登录
-    if (!getToken()) {
-      this.$message.error({
-        message: "未登录"
-      });
-      this.$router.push("/login");
-      return;
-    }
-    // 发送请求 渲染用户信息
-    apiInfo().then(res => {
-      if (res.data.code == 200) {
-        this.userInfo = res.data.data;
-        this.avatarUrl = process.env.VUE_APP_URL + "/" + this.userInfo.avatar;
-      } else if (res.data.code == 206) {
-        this.$message.error({
-          message: "token错误"
-        });
-        this.$router.push("/login");
-      }
-    });
   },
   methods: {
     exit() {

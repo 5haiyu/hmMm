@@ -124,11 +124,11 @@ export default {
                 message: "验证通过",
                 type: "success"
               });
-              // 跳转到首页
-              this.$router.push("/index");
               // 将返回来的res数据里的token保存本地
               // window.localStorage.setItem("hmMm", res.data.data.token);
               setToken(res.data.data.token);
+              // 跳转到首页
+              this.$router.push("/index");
             } else {
               this.$message.error({
                 message: "验证失败"
