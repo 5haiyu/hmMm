@@ -17,7 +17,7 @@
       <el-aside width="auto">
         <!-- 菜单导航栏 -->
         <!-- 开启路由模式:router='true'-------------------------------------------- -->
-        <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router="true">
+        <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router="true" default-active="/subject">
           <el-menu-item index="/chart">
             <i class="el-icon-pie-chart"></i>
             <span slot="title">

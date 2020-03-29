@@ -2,26 +2,27 @@
   <div>
     <!-- 表头 -->
     <el-card class="subjectOne">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
-        <el-form-item label="审批人">
-          <el-input v-model="formInline.user" placeholder="审批人"></el-input>
+      <el-form :inline="true" :model="sbjData" class="demo-form-inline">
+        <el-form-item label="学科编号">
+          <el-input v-model="sbjData.rid" placeholder="学科编号"></el-input>
         </el-form-item>
         <el-form-item label="学科名称">
-          <el-input v-model="formInline.user" placeholder="学科名称"></el-input>
+          <el-input v-model="sbjData.name" placeholder="学科名称"></el-input>
         </el-form-item>
         <el-form-item label="创建者">
-          <el-input v-model="formInline.user" placeholder="创建者"></el-input>
+          <el-input v-model="sbjData.username" placeholder="创建者"></el-input>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="formInline.region" placeholder="请选择状态">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="sbjData.status" placeholder="请选择状态">
+            <el-option label="所有" value></el-option>
+            <el-option label="启用" value="1"></el-option>
+            <el-option label="禁用" value="0"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">查询</el-button>
-          <el-button @click="onSubmit">清除</el-button>
-          <el-button type="primary" @click="onSubmit">
+          <el-button type="primary" @click="check">筛选</el-button>
+          <el-button @click="clear">清除</el-button>
+          <el-button type="primary" @click="$refs.add.dialogFormVisible = true">
             <i class="el-icon-plus"></i>&nbsp; 增加学科
           </el-button>
         </el-form-item>
@@ -29,77 +30,132 @@
     </el-card>
     <!-- 表格 -->
     <el-card class="subjectTwo">
-      <el-table :data="tableData" style="width: 100%">
+      <el-table :data="subjectList" style="width: 100%">
         <el-table-column type="index" label="序号" width="50"></el-table-column>
-        <el-table-column prop="date" label="学科编号" width="180"></el-table-column>
+        <el-table-column prop="rid" label="学科编号" width="150"></el-table-column>
         <el-table-column prop="name" label="学科名称" width="180"></el-table-column>
-        <el-table-column prop="address" label="简称"></el-table-column>
-        <el-table-column prop="address" label="创建者"></el-table-column>
-        <el-table-column prop="address" label="创建日期"></el-table-column>
-        <el-table-column prop="address" label="状态">
-          <template slot-scope="scope">{{scope.row.isUse == 0? '启用' : '禁用'}}</template>
+        <el-table-column prop="short_name" label="简称"></el-table-column>
+        <el-table-column prop="username" label="创建者"></el-table-column>
+        <el-table-column prop="create_time" label="创建日期"></el-table-column>
+        <el-table-column prop="status" label="状态">
+          <template slot-scope="scope">{{scope.row.status == 1? '启用' : '禁用'}}</template>
         </el-table-column>
         <el-table-column label="操作">
-          <el-button type="text">编辑</el-button>
-          <el-button type="text">禁用</el-button>
-          <el-button type="text">删除</el-button>
+          <template slot-scope="scope">
+            <el-button type="text" @click="edit(scope.row)">编辑</el-button>
+            <el-button
+              type="text"
+              @click="changeStatus(scope.row)"
+            >{{scope.row.status == 1? '禁用' : '启用'}}</el-button>
+            <el-button type="text">删除</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <!-- 分页组件 -->
       <el-pagination
-        :current-page="currentPage"
-        :page-sizes="[10, 20, 30, 40]"
+        @size-change="sizeChange"
+        @current-change="currentChange"
+        :current-page="sbjData.page"
+        :page-sizes="[2, 4]"
         :page-size="100"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="400"
+        :total="totalPage"
       ></el-pagination>
     </el-card>
+    <addDialog ref="add"></addDialog>
+    <edit ref="edit"></edit>
   </div>
 </template>
 
 <script>
+// 导入封装的axios方法
+import { subject, status } from "../../api/subject";
+// 导入面板
+import addDialog from "../../views/subject/components/addDialog";
+import edit from "../../views/subject/components/edit";
 export default {
   data() {
     return {
-      formInline: {
-        user: "",
-        region: ""
-      },
-      // 表格数据
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-          isUse: 0
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1517 弄",
-          isUse: 0
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1519 弄",
-          isUse: 0
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1516 弄",
-          isUse: 1
-        }
-      ],
       // 当前页
-      currentPage: 1
+      // currentPage: 1,
+      totalPage: 0,
+      // 请求回来的学科列表数据
+      subjectList: [],
+      // 学科数据请求参数
+      sbjData: {
+        name: "",
+        page: 1,
+        limit: 2,
+        rid: "",
+        username: "",
+        status: ""
+      }
     };
   },
+  // 注册面板组件
+  components: {
+    addDialog,
+    edit
+  },
   methods: {
-    onSubmit() {
-      console.log("submit!");
+    clear() {
+      this.sbjData.rid = "";
+      this.sbjData.username = "";
+      this.sbjData.status = "";
+      this.sbjData.name = "";
+      this.sbjData.page = 1;
+      this.sbjData.limit = 2;
+      this.subjectData();
+    },
+    // 获取学科数据
+    subjectData() {
+      subject(this.sbjData).then(res => {
+        // window.console.log(res);
+        this.subjectList = res.data.data.items;
+        this.totalPage = res.data.data.pagination.total;
+      });
+    },
+    // 设置学科状态
+    changeStatus(row) {
+      let id = row.id;
+      status(id).then(() => {
+        // window.console.log(res);
+        // 改变状态后刷新一次学科数据
+        this.subjectData();
+        // 提示
+        if (row.status == 1) {
+          this.$message.error("禁用成功");
+        } else if (row.status == 0) {
+          this.$message.success("启用成功");
+        }
+      });
+    },
+    // 当前页变动
+    sizeChange(index) {
+      window.console.log(index);
+      this.sbjData.limit = index;
+      this.subjectData();
+    },
+    // 页码大小
+    currentChange(index) {
+      this.sbjData.page = index;
+      this.subjectData();
+    },
+    // 筛选按钮
+    check() {
+      this.subjectData();
+    },
+    // 编辑学科
+    edit(data) {
+      // 打开面板
+      this.$refs.edit.dialogFormVisible = true;
+      window.console.log(data);
+      // 把数据渲染到编辑面板上
+      this.$refs.edit.form = JSON.parse(JSON.stringify(data));
     }
+  },
+  created() {
+    this.subjectData();
   }
 };
 </script>

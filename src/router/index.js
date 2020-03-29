@@ -49,6 +49,7 @@ const router = new VueRouter({
         },
         {
             path: '/index',
+            redirect:'/subject',
             component: index,
             children: [{
                     path: '/chart',

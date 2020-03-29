@@ -53,6 +53,7 @@
 </template>
 
 <script>
+// 导入注册面板
 import register from "./components/register";
 // 导入封装的校验手机号的方法
 import { regPhone } from "@/utils/check";
