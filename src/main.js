@@ -16,6 +16,8 @@ Vue.use(ElementUI);
 
 // 导入vuex.store
 import store from './vuex/store'
+// 导入过滤器
+import './filter/fliter'
 
 Vue.config.productionTip = false
 

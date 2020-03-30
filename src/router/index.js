@@ -49,7 +49,8 @@ const router = new VueRouter({
         },
         {
             path: '/index',
-            redirect:'/subject',
+            // 重定向
+            redirect:'/enterprise',
             component: index,
             children: [{
                     path: '/chart',

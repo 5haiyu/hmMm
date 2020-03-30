@@ -36,7 +36,13 @@
         <el-table-column prop="name" label="学科名称" width="180"></el-table-column>
         <el-table-column prop="short_name" label="简称"></el-table-column>
         <el-table-column prop="username" label="创建者"></el-table-column>
-        <el-table-column prop="create_time" label="创建日期"></el-table-column>
+        <el-table-column prop="create_time" label="创建日期">
+          <template slot-scope="scope">
+            <!-- 全局过滤器 -->
+            {{scope.row.create_time | time}}
+            <!-- {{scope.row.create_time.split(' ')[0]}} -->
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态">
           <template slot-scope="scope">{{scope.row.status == 1? '启用' : '禁用'}}</template>
         </el-table-column>
@@ -47,7 +53,7 @@
               type="text"
               @click="changeStatus(scope.row)"
             >{{scope.row.status == 1? '禁用' : '启用'}}</el-button>
-            <el-button type="text">删除</el-button>
+            <el-button type="text" @click="delSubject(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -57,30 +63,27 @@
         @current-change="currentChange"
         :current-page="sbjData.page"
         :page-sizes="[2, 4]"
-        :page-size="100"
         layout="total, sizes, prev, pager, next, jumper"
         :total="totalPage"
       ></el-pagination>
     </el-card>
-    <addDialog ref="add"></addDialog>
-    <edit ref="edit"></edit>
+    <subAdd ref="add"></subAdd>
+    <subEdit ref="edit"></subEdit>
   </div>
 </template>
 
 <script>
 // 导入封装的axios方法
-import { subject, status } from "../../api/subject";
+import { subject, status, delData } from "../../api/subject";
 // 导入面板
-import addDialog from "../../views/subject/components/addDialog";
-import edit from "../../views/subject/components/edit";
+import subAdd from "../../views/subject/components/subAdd";
+import subEdit from "../../views/subject/components/subEdit";
 export default {
   data() {
     return {
       // 当前页
       // currentPage: 1,
       totalPage: 0,
-      // 请求回来的学科列表数据
-      subjectList: [],
       // 学科数据请求参数
       sbjData: {
         name: "",
@@ -89,15 +92,18 @@ export default {
         rid: "",
         username: "",
         status: ""
-      }
+      },
+      // 请求回来的学科列表数据
+      subjectList: []
     };
   },
   // 注册面板组件
   components: {
-    addDialog,
-    edit
+    subAdd,
+    subEdit
   },
   methods: {
+    // 清除按钮
     clear() {
       this.sbjData.rid = "";
       this.sbjData.username = "";
@@ -130,13 +136,13 @@ export default {
         }
       });
     },
-    // 当前页变动
+    // 页码大小
     sizeChange(index) {
-      window.console.log(index);
+      // window.console.log(index);
       this.sbjData.limit = index;
       this.subjectData();
     },
-    // 页码大小
+    // 当前页变动
     currentChange(index) {
       this.sbjData.page = index;
       this.subjectData();
@@ -149,9 +155,26 @@ export default {
     edit(data) {
       // 打开面板
       this.$refs.edit.dialogFormVisible = true;
-      window.console.log(data);
+      // window.console.log(data);
       // 把数据渲染到编辑面板上
-      this.$refs.edit.form = JSON.parse(JSON.stringify(data));
+      // 初始编辑面板的form.id为空  与scope.row.id不等
+      if (data.id !== this.$refs.edit.form.id) {
+        this.$refs.edit.form = JSON.parse(JSON.stringify(data));
+      }
+    },
+    // 删除学科
+    delSubject(row) {
+      delData(row.id).then(res => {
+        window.console.log(res);
+        if (res.data.code == 200) {
+          if (this.subjectList.length == 1) {
+            this.sbjData.page -= 1;
+          }
+          this.$message.success("删除成功");
+          this.subjectData();
+          window.console.log(this.sbjData);
+        }
+      });
     }
   },
   created() {

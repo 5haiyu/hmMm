@@ -81,3 +81,14 @@ export function editData(data) {
         data: data
     })
 }
+
+// 封装删除学科的方法
+export function delData(id){
+    return instance({
+        url:'/subject/remove',
+        method: 'POST',
+        data:{
+            id
+        }
+    })
+}
