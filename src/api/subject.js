@@ -1,26 +1,4 @@
-import axios from 'axios'
-// 导入token有关方法
-import {
-    getToken
-} from '../utils/token'
-
-const instance = axios.create({
-    baseURL: process.env.VUE_APP_URL,
-    withCredentials: true
-})
-// 请求拦截器
-instance.interceptors.request.use(function (config) {
-    config.headers.token = getToken()
-    return config
-}, function (error) {
-    return Promise.reject(error)
-})
-// 响应拦截器
-instance.interceptors.response.use(function (response) {
-    return response
-}, function (error) {
-    return Promise.reject(error)
-})
+import instance from '../utils/http'
 // 封装请求学科列表的方法
 export function subject({
     name,

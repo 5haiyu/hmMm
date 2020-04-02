@@ -122,7 +122,7 @@ export default {
             // window.console.log(res);
             if (res.data.code == 200) {
               this.$message({
-                message: "验证通过",
+                message: "信息验证通过",
                 type: "success"
               });
               // 将返回来的res数据里的token保存本地
@@ -132,7 +132,7 @@ export default {
               this.$router.push("/index");
             } else {
               this.$message.error({
-                message: "验证失败"
+                message: "信息验证失败"
               });
             }
           });

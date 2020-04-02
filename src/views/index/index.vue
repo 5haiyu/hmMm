@@ -7,7 +7,7 @@
         <span>黑马面面</span>
       </div>
       <div class="right">
-        <img :src='$store.state.avatarUrl' alt />
+        <img :src="$store.state.avatarUrl" alt />
         <span>{{$store.state.userInfo}},你好！</span>
         <button @click="exit">退出</button>
       </div>
@@ -18,41 +18,12 @@
         <!-- 菜单导航栏 -->
         <!-- 开启路由模式:router='true'-------------------------------------------- -->
         <el-menu class="el-menu-vertical-demo" :collapse="iscollapse" :router="true" default-active="/enterprise">
-          <el-menu-item index="/chart">
-            <i class="el-icon-pie-chart"></i>
-            <span slot="title">
-              <!-- <router-link to="/chart" class="link">数据概览</router-link> -->
-              数据概览
-            </span>
-          </el-menu-item>
-          <el-menu-item index="/user">
-            <i class="el-icon-user"></i>
-            <span slot="title">
-              <!-- <router-link to="/user" class="link">用户列表</router-link> -->
-              用户列表
-            </span>
-          </el-menu-item>
-          <el-menu-item index="/question">
-            <i class="el-icon-edit-outline"></i>
-            <span slot="title">
-              <!-- <router-link to="/question" class="link">题库列表</router-link> -->
-              题库列表
-            </span>
-          </el-menu-item>
-          <el-menu-item index="/enterprise">
-            <i class="el-icon-office-building"></i>
-            <span slot="title">
-              <!-- <router-link to="/enterprise" class="link">企业列表</router-link> -->
-              企业列表
-            </span>
-          </el-menu-item>
-          <el-menu-item index="/subject">
-            <i class="el-icon-notebook-2"></i>
-            <span slot="title">
-              <!-- <router-link to="/subject" class="link">学科列表</router-link> -->
-              学科列表
-            </span>
-          </el-menu-item>
+          <template v-for="(item, index) in child">
+            <el-menu-item :index="item.path" :key="index" v-if="item.meta.roles.includes($store.state.role)">
+              <i :class="item.meta.icon"></i>
+              <span slot="title">{{item.meta.title}}</span>
+            </el-menu-item>
+          </template>
         </el-menu>
       </el-aside>
       <el-main>
@@ -63,6 +34,7 @@
 </template>
 
 <script>
+import children from "../../router/children";
 import { apiLogout } from "@/api/index";
 import { removeToken } from "@/utils/token";
 export default {
@@ -73,7 +45,9 @@ export default {
       // 头像路径
       avatarUrl: "",
       // 导航栏菜单开合
-      iscollapse: false
+      iscollapse: false,
+      // 子路由数据
+      child: children
     };
   },
   methods: {

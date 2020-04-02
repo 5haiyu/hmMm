@@ -14,20 +14,20 @@
         <el-form-item label="企业简介" :label-width="formLabelWidth" prop="intro">
           <el-input v-model="form.intro" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="企业备注" :label-width="formLabelWidth">
+        <el-form-item label="企业备注" :label-width="formLabelWidth" prop="remark">
           <el-input v-model="form.remark" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addEnt">确 定</el-button>
+        <el-button type="primary" @click="proEnt">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { apiAddEnt } from "../../../api/enterprise";
+import { apiAddEnt, apiEditEnt } from "../../../api/enterprise";
 export default {
   data() {
     return {
@@ -53,29 +53,51 @@ export default {
     };
   },
   methods: {
-    addEnt() {
-      this.$refs.form.validate(valid => {
-        window.console.log(123);
-        if (valid) {
-          apiAddEnt(this.form).then(res => {
-            // window.console.log(res);
-            if (res.data.code == 200) {
-              this.$message.success("添加成功");
-              // 关闭面板
-              this.dialogFormVisible = false;
-              // 重置（清空）面板
-              this.$refs.form.resetFields();
-              this.form.short_name = "";
-              this.form.intro = "";
-              this.form.remark = "";
-              //刷新面板
-              this.$parent.getList();
-            }
-          });
-        } else {
-          this.$message.error("校验失败");
-        }
-      });
+    proEnt() {
+      // 新增
+      if (this.isAdd) {
+        this.$refs.form.validate(valid => {
+          if (valid) {
+            apiAddEnt(this.form).then(res => {
+              if (res.data.code == 200) {
+                this.$message.success("添加成功");
+                // 关闭面板
+                this.dialogFormVisible = false;
+                // 重置（清空）面板
+                this.$refs.form.resetFields();
+                this.form.short_name = "";
+                this.form.intro = "";
+                this.form.remark = "";
+                //刷新面板
+                this.$parent.getList();
+              }
+            });
+          } else {
+            this.$message.error("校验失败");
+          }
+        });
+      }
+      // 编辑
+      else {
+        this.$refs.form.validate(valid => {
+          if (valid) {
+            apiEditEnt(this.form).then(res => {
+              window.console.log(res);
+              if (res.data.code == 200) {
+                this.$message.success("编辑成功");
+                // 关闭面板
+                this.dialogFormVisible = false;
+                //刷新面板
+                this.$parent.getList();
+              } else if (res.data.code == 201) {
+                this.$message.error(res.data.message); //学科名称不能重复
+              }
+            });
+          } else {
+            this.$message.error("校验失败");
+          }
+        });
+      }
     }
   }
 };

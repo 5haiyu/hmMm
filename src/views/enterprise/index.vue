@@ -7,7 +7,7 @@
           <el-input v-model="entData.eid" placeholder="企业编号"></el-input>
         </el-form-item>
         <el-form-item label="企业名称">
-          <el-input v-model="entData.name" placeholder="学科名称"></el-input>
+          <el-input v-model="entData.name" placeholder="企业名称"></el-input>
         </el-form-item>
         <el-form-item label="创建者">
           <el-input v-model="entData.username" placeholder="创建者"></el-input>
@@ -68,7 +68,7 @@
     </el-card>
     <!-- <entAdd ref="add"></entAdd> -->
     <!-- <entEdit ref="entEdit"></entEdit> -->
-    <processEnt ref="processEnt" />>
+    <processEnt ref="processEnt" />
   </div>
 </template>
 
@@ -146,13 +146,17 @@ export default {
     edit(row) {
       this.$refs.processEnt.dialogFormVisible = true;
       this.$refs.processEnt.isAdd = false;
-      this.$refs.processEnt.form = JSON.parse(JSON.stringify(row));
+      this.$refs.processEnt.$nextTick(() => {
+        this.$refs.processEnt.form = JSON.parse(JSON.stringify(row));
+      });
     },
     // 新增企业
-    add(){
-      this.$refs.processEnt.dialogFormVisible = true;
+    add() {
       this.$refs.processEnt.isAdd = true;
-
+      this.$refs.processEnt.dialogFormVisible = true;
+      this.$nextTick(() => {
+        this.$refs.processEnt.$refs.form.resetFields();
+      });
     },
     // 清除
     clear() {
