@@ -30,3 +30,13 @@ export function apiQueList({
         }
     })
 }
+
+// 封装添加题库的方法
+export function apiAddQuestion(data) {
+    return instance({
+      url: "/question/add",
+      method: "POST",
+      data: data
+    });
+  }
+  
